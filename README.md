@@ -1,2 +1,882 @@
-# kingme
-kingme
+<!DOCTYPE html>
+<html lang="id">
+<head>
+        <!-- Form Tambah Produk -->
+        <div id="product-form-container">
+            <!-- Form inputs akan diisi di sini -->
+        </div>
+        
+        <!-- Daftar Produk -->
+        <div id="products-list">
+            <h2>Daftar Produk</h2>
+            <table id="products-table">
+                <thead>
+                    <tr>
+                        <th>Nama</th>
+                        <th>Harga</th>
+                        <th>Stok</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Produk akan diisi via JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <!-- Sisipkan JavaScript -->
+    <script src="js/spreadsheet-service.js"></script>
+    <script src="js/admin-products.js"></script>
+</body>
+</html>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KINGME - Toko Online Terpercaya</title>
+    <meta name="description" content="KINGME menyediakan berbagai produk berkualitas dengan harga terbaik. Belanja online aman dan nyaman hanya di KINGME.">
+    <meta name="keywords" content="toko online, belanja online, KINGME, produk berkualitas">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --secondary: #1e40af;
+            --accent: #f59e0b;
+            --dark: #1f2937;
+            --light: #f9fafb;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        body {
+            background-color: var(--light);
+            color: var(--dark);
+        }
+        
+        .hero-section {
+            background: linear-gradient(135deg, rgba(37, 99, 235, 0.9), rgba(30, 64, 175, 0.9));
+            color: white;
+            padding: 4rem 2rem;
+        }
+        
+        .product-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border-radius: 0.5rem;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--secondary);
+            transform: translateY(-2px);
+        }
+        
+        .badge {
+            background-color: var(--accent);
+            color: white;
+        }
+        
+        .shipping-calculator {
+            background-color: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .footer {
+            background-color: var(--dark);
+            color: white;
+        }
+        
+        .navbar {
+            background-color: white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .mobile-menu {
+            transition: all 0.3s ease;
+        }
+        
+        .cart-btn {
+            position: relative;
+        }
+        
+        .cart-count {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: var(--accent);
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+        
+        .responsive-grid {
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        }
+        
+        .product-images-slider {
+            scroll-behavior: smooth;
+            scroll-snap-type: x mandatory;
+        }
+        
+        .product-image {
+            scroll-snap-align: start;
+            flex: 0 0 100%;
+        }
+        
+        @media (min-width: 768px) {
+            .product-image {
+                flex: 0 0 50%;
+            }
+        }
+        
+        @media (min-width: 1024px) {
+            .product-image {
+                flex: 0 0 33.33%;
+            }
+        }
+        
+        .loading-spinner {
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<script>
+// Kode JavaScript untuk koneksi spreadsheet
+const SPREADSHEET_ID = '10e8aIsLnl9hezeylHMr_sQRWzUI5A3ZCJdkXkxPUCNQ';
+const API_KEY = 'AIzaSyBGWEIFaeM_3Nneyog4nrHW5nF7Wq85Ygg'; // HATI-HATI dengan keamanan!
+async function getProducts() {
+  try {
+    const response = await fetch(
+      `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/Products!A:Z?key=${API_KEY}`
+    );
+    const data = await response.json();
+    return data.values;
+  } catch (error) {
+    console.error('Error fetching products:', error);
+    return [];
+  }
+}
+// Fungsi lain untuk upload produk, order, dll.
+</script>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar fixed top-0 left-0 right-0 z-50">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-4">
+                <a href="#" class="text-2xl font-bold text-primary-600">
+                    <span class="text-primary">KING</span><span class="text-accent">ME</span>
+                </a>
+                <div class="hidden md:flex space-x-6">
+                    <a href="#home" class="text-dark hover:text-primary">Beranda</a>
+                    <a href="#products" class="text-dark hover:text-primary">Produk</a>
+                    <a href="#categories" class="text-dark hover:text-primary">Kategori</a>
+                    <a href="#about" class="text-dark hover:text-primary">Tentang</a>
+                    <a href="#contact" class="text-dark hover:text-primary">Kontak</a>
+                </div>
+            </div>
+            
+            <div class="flex items-center space-x-4">
+                <div class="relative">
+                    <input type="text" placeholder="Cari produk..." class="px-4 py-2 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent hidden md:block">
+                    <button class="md:hidden text-dark">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+                
+                <button class="cart-btn relative">
+                    <i class="fas fa-shopping-cart text-xl text-dark"></i>
+                    <span class="cart-count">0</span>
+                </button>
+                
+                <a href="#" id="login-btn" class="hidden md:block px-4 py-2 rounded-full bg-primary text-white hover:bg-secondary transition">Masuk</a>
+                
+                <button id="mobile-menu-btn" class="md:hidden text-dark">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="mobile-menu hidden bg-white w-full px-4 py-2 shadow-md md:hidden">
+            <div class="flex flex-col space-y-3">
+                <input type="text" placeholder="Cari produk..." class="w-full px-4 py-2 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                <a href="#home" class="block py-2 text-dark hover:text-primary">Beranda</a>
+                <a href="#products" class="block py-2 text-dark hover:text-primary">Produk</a>
+                <a href="#categories" class="block py-2 text-dark hover:text-primary">Kategori</a>
+                <a href="#about" class="block py-2 text-dark hover:text-primary">Tentang</a>
+                <a href="#contact" class="block py-2 text-dark hover:text-primary">Kontak</a>
+                <a href="#" id="mobile-login-btn" class="block w-full px-4 py-2 rounded-full bg-primary text-white text-center hover:bg-secondary transition">Masuk</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero-section mt-16">
+        <div class="container mx-auto px-4 flex flex-col md:flex-row items-center">
+            <div class="md:w-1/2 mb-8 md:mb-0">
+                <h1 class="text-4xl md:text-5xl font-bold mb-4">Selamat Datang di KINGME</h1>
+                <p class="text-xl mb-6">Toko Online Terpercaya dengan Produk Berkualitas</p>
+                <div class="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4">
+                    <a href="#products" class="px-6 py-3 bg-white text-primary font-semibold rounded-full hover:bg-gray-100 transition text-center">Belanja Sekarang</a>
+                    <a href="#categories" class="px-6 py-3 border-2 border-white text-white font-semibold rounded-full hover:bg-white hover:text-primary transition text-center">Lihat Kategori</a>
+                </div>
+            </div>
+            <div class="md:w-1/2">
+                <div class="bg-white bg-opacity-20 p-4 rounded-lg">
+                    <img src="https://placehold.co/600x400" alt="Gambar showcase produk terlaris KINGME dengan latar belakang modern" class="w-full h-auto rounded-lg shadow-lg">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Featured Categories -->
+    <section id="categories" class="py-12 bg-white">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-bold text-center mb-2">Kategori Produk</h2>
+            <p class="text-center text-gray-600 mb-8">Temukan produk yang sesuai dengan kebutuhan Anda</p>
+            
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+                <a href="#" class="category-card p-4 rounded-lg bg-gray-50 hover:bg-primary hover:text-white transition text-center">
+                    <div class="bg-white rounded-full p-4 mb-3 mx-auto">
+                        <img src="https://placehold.co/60x60" alt="Icon elektronik dengan desain modern" class="w-12 h-12 mx-auto">
+                    </div>
+                    <h3 class="font-semibold">Elektronik</h3>
+                </a>
+                
+                <a href="#" class="category-card p-4 rounded-lg bg-gray-50 hover:bg-primary hover:text-white transition text-center">
+                    <div class="bg-white rounded-full p-4 mb-3 mx-auto">
+                        <img src="https://placehold.co/60x60" alt="Icon fashion pria dengan gaya minimalis" class="w-12 h-12 mx-auto">
+                    </div>
+                    <h3 class="font-semibold">Fashion Pria</h3>
+                </a>
+                
+                <a href="#" class="category-card p-4 rounded-lg bg-gray-50 hover:bg-primary hover:text-white transition text-center">
+                    <div class="bg-white rounded-full p-4 mb-3 mx-auto">
+                        <img src="https://placehold.co/60x60" alt="Icon fashion wanita dengan warna cerah" class="w-12 h-12 mx-auto">
+                    </div>
+                    <h3 class="font-semibold">Fashion Wanita</h3>
+                </a>
+                
+                <a href="#" class="category-card p-4 rounded-lg bg-gray-50 hover:bg-primary hover:text-white transition text-center">
+                    <div class="bg-white rounded-full p-4 mb-3 mx-auto">
+                        <img src="https://placehold.co/60x60" alt="Icon rumah tangga dengan desain homey" class="w-12 h-12 mx-auto">
+                    </div>
+                    <h3 class="font-semibold">Rumah Tangga</h3>
+                </a>
+                
+                <a href="#" class="category-card p-4 rounded-lg bg-gray-50 hover:bg-primary hover:text-white transition text-center">
+                    <div class="bg-white rounded-full p-4 mb-3 mx-auto">
+                        <img src="https://placehold.co/60x60" alt="Icon kecantikan dengan elemen stylish" class="w-12 h-12 mx-auto">
+                    </div>
+                    <h3 class="font-semibold">Kecantikan</h3>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Popular Products -->
+    <section id="products" class="py-12 bg-gray-50">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-bold text-center mb-2">Produk Terpopuler</h2>
+            <p class="text-center text-gray-600 mb-8">Produk pilihan dengan kualitas terbaik</p>
+            
+            <div class="grid responsive-grid gap-6">
+                <!-- Product 1 -->
+                <div class="product-card bg-white">
+                    <div class="relative">
+                        <img src="https://placehold.co/600x600" alt="Smartphone flagship dengan fitur canggih dan desain premium" class="w-full h-48 object-cover">
+                        <span class="badge absolute top-2 left-2 px-3 py-1 rounded-full text-xs font-semibold">Terlaris</span>
+                    </div>
+                    <div class="p-4">
+                        <h3 class="font-semibold text-lg mb-1">Smartphone Flasgship X1</h3>
+                        <p class="text-gray-600 text-sm mb-2">Spesifikasi tinggi dengan kamera profesional</p>
+                        <div class="flex justify-between items-center">
+                            <span class="font-bold text-primary">Rp 8.999.000</span>
+                            <button class="btn-primary px-3 py-1 rounded-full text-sm">+ Keranjang</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Product 2 -->
+                <div class="product-card bg-white">
+                    <div class="relative">
+                        <img src="https://placehold.co/600x600" alt="Jam tangan mewah dengan bahan stainless steel dan waterproof" class="w-full h-48 object-cover">
+                        <span class="badge absolute top-2 left-2 px-3 py-1 rounded-full text-xs font-semibold">Diskon 20%</span>
+                    </div>
+                    <div class="p-4">
+                        <h3 class="font-semibold text-lg mb-1">Jam Tangan Mewah</h3>
+                        <p class="text-gray-600 text-sm mb-2">Desain elegan, waterproof 5ATM</p>
+                        <div class="flex justify-between items-center">
+                            <span class="font-bold text-primary">
+                                <span class="text-gray-400 line-through mr-2">Rp 1.500.000</span>
+                                Rp 1.200.000
+                            </span>
+                            <button class="btn-primary px-3 py-1 rounded-full text-sm">+ Keranjang</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Product 3 -->
+                <div class="product-card bg-white">
+                    <div class="relative">
+                        <img src="https://placehold.co/600x600" alt="Sepatu sneakers casual dengan sol karet dan bahan berkualitas" class="w-full h-48 object-cover">
+                    </div>
+                    <div class="p-4">
+                        <h3 class="font-semibold text-lg mb-1">Sneakers Casual</h3>
+                        <p class="text-gray-600 text-sm mb-2">Nyaman digunakan sehari-hari</p>
+                        <div class="flex justify-between items-center">
+                            <span class="font-bold text-primary">Rp 499.000</span>
+                            <button class="btn-primary px-3 py-1 rounded-full text-sm">+ Keranjang</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Product 4 -->
+                <div class="product-card bg-white">
+                    <div class="relative">
+                        <img src="https://placehold.co/600x600" alt="Blender listrik multifungsi dengan kapasitas besar" class="w-full h-48 object-cover">
+                    </div>
+                    <div class="p-4">
+                        <h3 class="font-semibold text-lg mb-1">Blender Multifungsi</h3>
+                        <p class="text-gray-600 text-sm mb-2">Kapasitas 2L, 6 kecepatan</p>
+                        <div class="flex justify-between items-center">
+                            <span class="font-bold text-primary">Rp 750.000</span>
+                            <button class="btn-primary px-3 py-1 rounded-full text-sm">+ Keranjang</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Product 5 -->
+                <div class="product-card bg-white">
+                    <div class="relative">
+                        <img src="https://placehold.co/600x600" alt="Set skincare complete dengan kemasan premium" class="w-full h-48 object-cover">
+                        <span class="badge absolute top-2 left-2 px-3 py-1 rounded-full text-xs font-semibold">Baru</span>
+                    </div>
+                    <div class="p-4">
+                        <h3 class="font-semibold text-lg mb-1">Skincare Complete Set</h3>
+                        <p class="text-gray-600 text-sm mb-2">Untuk kulit sehat dan cerah</p>
+                        <div class="flex justify-between items-center">
+                            <span class="font-bold text-primary">Rp 1.299.000</span>
+                            <button class="btn-primary px-3 py-1 rounded-full text-sm">+ Keranjang</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Product 6 -->
+                <div class="product-card bg-white">
+                    <div class="relative">
+                        <img src="https://placehold.co/600x600" alt="Tas laptop anti-air dengan kompartemen banyak" class="w-full h-48 object-cover">
+                    </div>
+                    <div class="p-4">
+                        <h3 class="font-semibold text-lg mb-1">Tas Laptop Premium</h3>
+                        <p class="text-gray-600 text-sm mb-2">Anti air, multiple kompartemen</p>
+                        <div class="flex justify-between items-center">
+                            <span class="font-bold text-primary">Rp 599.000</span>
+                            <button class="btn-primary px-3 py-1 rounded-full text-sm">+ Keranjang</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="text-center mt-8">
+                <a href="#" class="px-6 py-3 bg-primary text-white font-semibold rounded-full hover:bg-secondary transition inline-block">Lihat Semua Produk</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Promo Section -->
+    <section class="py-12 bg-primary text-white">
+        <div class="container mx-auto px-4 text-center">
+            <h2 class="text-3xl font-bold mb-4">Promo Spesial Hari Ini!</h2>
+            <p class="text-xl mb-6">Dapatkan diskon hingga 50% untuk kategori tertentu</p>
+            <div class="max-w-3xl mx-auto bg-white bg-opacity-20 rounded-lg p-6 mb-8">
+                <div class="flex flex-wrap justify-center gap-4">
+                    <div class="bg-white bg-opacity-30 p-4 rounded-lg text-center min-w-[200px]">
+                        <img src="https://placehold.co/100x100" alt="Icon elektronik dengan diskon besar" class="w-16 h-16 mx-auto mb-3">
+                        <h3 class="font-semibold mb-1">Elektronik</h3>
+                        <p class="text-sm">Diskon hingga 30%</p>
+                    </div>
+                    <div class="bg-white bg-opacity-30 p-4 rounded-lg text-center min-w-[200px]">
+                        <img src="https://placehold.co/100x100" alt="Icon fashion dengan penawaran khusus" class="w-16 h-16 mx-auto mb-3">
+                        <h3 class="font-semibold mb-1">Fashion</h3>
+                        <p class="text-sm">Diskon hingga 50%</p>
+                    </div>
+                    <div class="bg-white bg-opacity-30 p-4 rounded-lg text-center min-w-[200px]">
+                        <img src="https://placehold.co/100x100" alt="Icon rumah tangga dengan harga spesial" class="w-16 h-16 mx-auto mb-3">
+                        <h3 class="font-semibold mb-1">Rumah Tangga</h3>
+                        <p class="text-sm">Diskon hingga 40%</p>
+                    </div>
+                </div>
+            </div>
+            <a href="#" class="px-6 py-3 bg-white text-primary font-semibold rounded-full hover:bg-gray-100 transition inline-block">Lihat Promo</a>
+        </div>
+    </section>
+
+    <!-- Product Detail Modal -->
+    <div id="product-modal" class="fixed inset-0 z-50 hidden overflow-y-auto">
+        <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div class="fixed inset-0 transition-opacity" aria-hidden="true">
+                <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+            </div>
+            
+            <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
+                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="sm:flex sm:items-start">
+                        <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
+                                        Smartphone Flasgship X1
+                                    </h3>
+                                    <div class="mt-1">
+                                        <span class="text-primary font-bold">Rp 8.999.000</span>
+                                        <span class="ml-2 text-sm text-gray-500">Stok: 50</span>
+                                    </div>
+                                </div>
+                                <button id="close-modal" class="text-gray-400 hover:text-gray-500">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                            
+                            <div class="mt-4">
+                                <div class="product-images-slider flex overflow-x-auto snap-x snap-mandatory rounded-lg mb-4">
+                                    <div class="product-image">
+                                        <img src="https://placehold.co/800x600" alt="Smartphone Flagship warna hitam dengan tampilan depan" class="w-full h-auto">
+                                    </div>
+                                    <div class="product-image">
+                                        <img src="https://placehold.co/800x600" alt="Smartphone Flagship tampilan samping dengan kamera profesional" class="w-full h-auto">
+                                    </div>
+                                    <div class="product-image">
+                                        <img src="https://placehold.co/800x600" alt="Smartphone Flagship tampilan belakang desain premium" class="w-full h-auto">
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <h4 class="font-semibold mb-2">Deskripsi Produk:</h4>
+                                    <p class="text-gray-600">Smartphone flagship dengan performa tinggi, kamera profesional 108MP, layar AMOLED 6.7" 120Hz, prosesor Snapdragon 8 Gen 2, RAM 12GB, penyimpanan 256GB, baterai 5000mAh dengan fast charging 67W.</p>
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <h4 class="font-semibold mb-2">Spesifikasi:</h4>
+                                    <ul class="list-disc list-inside text-gray-600">
+                                        <li>Prosesor: Snapdragon 8 Gen 2</li>
+                                        <li>RAM: 12GB LPDDR5</li>
+                                        <li>Penyimpanan: 256GB UFS 4.0</li>
+                                        <li>Layar: 6.7" AMOLED, 120Hz</li>
+                                        <li>Kamera Belakang: 108MP + 50MP + 12MP</li>
+                                        <li>Kamera Depan: 32MP</li>
+                                        <li>Baterai: 5000mAh, 67W Fast Charging</li>
+                                    </ul>
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <h4 class="font-semibold mb-2">Pengiriman:</h4>
+                                    <div class="shipping-calculator p-4">
+                                        <div class="mb-3">
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">Alamat Pengiriman</label>
+                                            <input type="text" placeholder="Masukkan alamat lengkap" class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                                        </div>
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700 mb-1">Provinsi</label>
+                                                <select class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                                                    <option>Pilih Provinsi</option>
+                                                    <option>DKI Jakarta</option>
+                                                    <option>Jawa Barat</option>
+                                                    <option>Jawa Tengah</option>
+                                                    <option>Jawa Timur</option>
+                                                    <option>Banten</option>
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700 mb-1">Kota/Kabupaten</label>
+                                                <select class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                                                    <option>Pilih Kota/Kabupaten</option>
+                                                    <option>Jakarta Selatan</option>
+                                                    <option>Jakarta Pusat</option>
+                                                    <option>Jakarta Utara</option>
+                                                    <option>Jakarta Barat</option>
+                                                    <option>Jakarta Timur</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="flex justify-between items-center">
+                                            <button class="px-4 py-2 bg-primary text-white rounded-md hover:bg-secondary">Hitung Ongkir</button>
+                                            <div class="text-right">
+                                                <p class="text-sm text-gray-600">Estimasi Ongkir:</p>
+                                                <p class="font-semibold">Rp 25.000 - 50.000</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex flex-col sm:flex-row justify-between items-center mt-6">
+                                    <div class="flex items-center mb-3 sm:mb-0">
+                                        <button id="decrease-qty" class="px-3 py-1 bg-gray-200 rounded-l-md hover:bg-gray-300">-</button>
+                                        <input id="product-qty" type="number" value="1" min="1" max="50" class="w-16 text-center border-t border-b border-gray-300">
+                                        <button id="increase-qty" class="px-3 py-1 bg-gray-200 rounded-r-md hover:bg-gray-300">+</button>
+                                    </div>
+                                    <div>
+                                        <button class="px-6 py-2 bg-primary text-white rounded-md hover:bg-secondary mr-2">
+                                            <i class="fas fa-shopping-cart mr-2"></i> Tambah ke Keranjang
+                                        </button>
+                                        <button class="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">
+                                            <i class="fas fa-bolt mr-2"></i> Beli Sekarang
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Testimonials -->
+    <section class="py-12 bg-white">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-bold text-center mb-2">Testimonial Pelanggan</h2>
+            <p class="text-center text-gray-600 mb-8">Apa kata mereka tentang KINGME</p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-gray-50 p-6 rounded-lg">
+                    <div class="flex items-center mb-4">
+                        <img src="https://placehold.co/60x60" alt="Avatar pelanggan Andi dengan ekspresi puas" class="w-12 h-12 rounded-full mr-4">
+                        <div>
+                            <h4 class="font-semibold">Andi Wijaya</h4>
+                            <div class="flex text-yellow-400">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-gray-600">"Produknya original dan pengiriman cepat. Sudah beberapa kali belanja di KINGME dan selalu puas dengan pelayanannya."</p>
+                </div>
+                
+                <div class="bg-gray-50 p-6 rounded-lg">
+                    <div class="flex items-center mb-4">
+                        <img src="https://placehold.co/60x60" alt="Avatar pelanggan Siti dengan senyuman" class="w-12 h-12 rounded-full mr-4">
+                        <div>
+                            <h4 class="font-semibold">Siti Rahmawati</h4>
+                            <div class="flex text-yellow-400">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star-half-alt"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-gray-600">"Barang sesuai deskripsi, packing rapi dan aman. Harga lebih murah dibanding toko lain dengan kualitas yang sama."</p>
+                </div>
+                
+                <div class="bg-gray-50 p-6 rounded-lg">
+                    <div class="flex items-center mb-4">
+                        <img src="https://placehold.co/60x60" alt="Avatar pelanggan Budi dengan gaya profesional" class="w-12 h-12 rounded-full mr-4">
+                        <div>
+                            <h4 class="font-semibold">Budi Santoso</h4>
+                            <div class="flex text-yellow-400">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-gray-600">"Respon CS sangat cepat membantu menyelesaikan masalah. Produk elektronik yang saya beli bekerja dengan sempurna."</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Payment Methods -->
+    <section class="py-12 bg-gray-50">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-bold text-center mb-2">Metode Pembayaran</h2>
+            <p class="text-center text-gray-600 mb-8">Kami menerima berbagai metode pembayaran</p>
+            
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
+                <div class="bg-white p-4 rounded-lg flex justify-center items-center">
+                    <img src="https://placehold.co/120x60" alt="Logo Bank BCA dengan warna biru" class="h-12 object-contain">
+                </div>
+                <div class="bg-white p-4 rounded-lg flex justify-center items-center">
+                    <img src="https://placehold.co/120x60" alt="Logo Bank Mandiri dengan warna hijau" class="h-12 object-contain">
+                </div>
+                <div class="bg-white p-4 rounded-lg flex justify-center items-center">
+                    <img src="https://placehold.co/120x60" alt="Logo Bank BRI dengan warna merah" class="h-12 object-contain">
+                </div>
+                <div class="bg-white p-4 rounded-lg flex justify-center items-center">
+                    <img src="https://placehold.co/120x60" alt="Logo Gopay dengan warna biru-hijau" class="h-12 object-contain">
+                </div>
+                <div class="bg-white p-4 rounded-lg flex justify-center items-center">
+                    <img src="https://placehold.co/120x60" alt="Logo OVO dengan warna ungu" class="h-12 object-contain">
+                </div>
+                <div class="bg-white p-4 rounded-lg flex justify-center items-center">
+                    <img src="https://placehold.co/120x60" alt="Logo ShopeePay dengan warna oranye" class="h-12 object-contain">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="py-12 bg-white">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row items-center">
+                <div class="md:w-1/2 mb-8 md:mb-0 md:pr-8">
+                    <div class="bg-gray-100 rounded-lg overflow-hidden">
+                        <img src="https://placehold.co/800x600" alt="Tim KINGME berfoto bersama di kantor pusat" class="w-full h-auto">
+                    </div>
+                </div>
+                <div class="md:w-1/2">
+                    <h2 class="text-3xl font-bold mb-4">Tentang KINGME</h2>
+                    <p class="text-gray-600 mb-4">KINGME adalah toko online terpercaya yang menyediakan berbagai produk berkualitas dengan harga kompetitif. Berdiri sejak 2018, kami telah melayani ribuan pelanggan di seluruh Indonesia.</p>
+                    <p class="text-gray-600 mb-4">Kami berkomitmen untuk memberikan pengalaman berbelanja online yang aman, nyaman dan memuaskan. Semua produk yang kami jual dijamin keasliannya dan bergaransi.</p>
+                    <div class="mt-6">
+                        <div class="flex items-center mb-3">
+                            <div class="w-12 h-12 bg-primary bg-opacity-10 rounded-full flex items-center justify-center mr-4">
+                                <i class="fas fa-check-circle text-primary text-xl"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold">Produk Berkualitas</h4>
+                                <p class="text-sm text-gray-600">100% original dengan garansi resmi</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center mb-3">
+                            <div class="w-12 h-12 bg-primary bg-opacity-10 rounded-full flex items-center justify-center mr-4">
+                                <i class="fas fa-truck text-primary text-xl"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold">Pengiriman Cepat</h4>
+                                <p class="text-sm text-gray-600">Gratis ongkir untuk order tertentu</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center">
+                            <div class="w-12 h-12 bg-primary bg-opacity-10 rounded-full flex items-center justify-center mr-4">
+                                <i class="fas fa-headset text-primary text-xl"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold">Layanan Pelanggan</h4>
+                                <p class="text-sm text-gray-600">Siap membantu 24/7</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Shipping Partners -->
+    <section class="py-12 bg-gray-50">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-bold text-center mb-2">Partner Pengiriman</h2>
+            <p class="text-center text-gray-600 mb-8">Kami bekerja sama dengan ekspedisi terbaik</p>
+            
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="bg-white p-4 rounded-lg flex justify-center items-center">
+                    <img src="https://placehold.co/200x100" alt="Logo JNE dengan warna merah" class="h-16 object-contain">
+                </div>
+                <div class="bg-white p-4 rounded-lg flex justify-center items-center">
+                    <img src="https://placehold.co/200x100" alt="Logo SiCepat dengan warna hijau" class="h-16 object-contain">
+                </div>
+                <div class="bg-white p-4 rounded-lg flex justify-center items-center">
+                    <img src="https://placehold.co/200x100" alt="Logo TIKI dengan warna orange" class="h-16 object-contain">
+                </div>
+                <div class="bg-white p-4 rounded-lg flex justify-center items-center">
+                    <img src="https://placehold.co/200x100" alt="Logo Ninja Express dengan warna merah-hitam" class="h-16 object-contain">
+                </div>
+                <div class="bg-white p-4 rounded-lg flex justify-center items-center">
+                    <img src="https://placehold.co/200x100" alt="Logo Shopee Express dengan warna ungu" class="h-16 object-contain">
+                </div>
+                <div class="bg-white p-4 rounded-lg flex justify-center items-center">
+                    <img src="https://placehold.co/200x100" alt="Logo JNT dengan warna merah muda" class="h-16 object-contain">
+                </div>
+                <div class="bg-white p-4 rounded-lg flex justify-center items-center">
+                    <img src="https://placehold.co/200x100" alt="Logo Grab Express dengan warna hijau" class="h-16 object-contain">
+                </div>
+                <div class="bg-white p-4 rounded-lg flex justify-center items-center">
+                    <img src="https://placehold.co/200x100" alt="Logo POS Indonesia dengan warna kuning" class="h-16 object-contain">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="py-12 bg-white">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-bold text-center mb-2">Hubungi Kami</h2>
+            <p class="text-center text-gray-600 mb-8">Kami siap membantu Anda</p>
+            
+            <div class="flex flex-col md:flex-row">
+                <div class="md:w-1/2 mb-8 md:mb-0 md:pr-8">
+                    <div class="bg-gray-50 p-6 rounded-lg">
+                        <h3 class="font-semibold text-xl mb-4">Informasi Kontak</h3>
+                        
+                        <div class="mb-6">
+                            <div class="flex items-start mb-4">
+                                <div class="w-10 h-10 bg-primary bg-opacity-10 rounded-full flex items-center justify-center mr-4">
+                                    <i class="fas fa-map-marker-alt text-primary"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold">Alamat</h4>
+                                    <p class="text-gray-600">Jl. Sudirman No. 123, Jakarta Pusat, DKI Jakarta 10220</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-start mb-4">
+                                <div class="w-10 h-10 bg-primary bg-opacity-10 rounded-full flex items-center justify-center mr-4">
+                                    <i class="fas fa-envelope text-primary"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold">Email</h4>
+                                    <p class="text-gray-600">cs@kingme.com</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-start">
+                                <div class="w-10 h-10 bg-primary bg-opacity-10 rounded-full flex items-center justify-center mr-4">
+                                    <i class="fas fa-phone-alt text-primary"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold">Telepon</h4>
+                                    <p class="text-gray-600">(021) 12345678</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <h4 class="font-semibold mb-2">Jam Operasional</h4>
+                            <ul class="text-gray-600">
+                                <li class="mb-1">Senin - Jumat: 08:00 - 17:00 WIB</li>
+                                <li>Sabtu - Minggu: 09:00 - 15:00 WIB</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="md:w-1/2">
+                    <form class="bg-gray-50 p-6 rounded-lg">
+                        <h3 class="font-semibold text-xl mb-4">Kirim Pesan</h3>
+                        
+                        <div class="mb-4">
+                            <label class="block text-gray-700 text-sm font-semibold mb-2" for="name">Nama Lengkap</label>
+                            <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="name" type="text" placeholder="Nama Anda">
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="block text-gray-700 text-sm font-semibold mb-2" for="email">Email</label>
+                            <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="email" type="email" placeholder="email@contoh.com">
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="block text-gray-700 text-sm font-semibold mb-2" for="subject">Subjek</label>
+                            <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="subject" type="text" placeholder="Subjek pesan">
+                        </div>
+                        
+                        <div class="mb-6">
+                            <label class="block text-gray-700 text-sm font-semibold mb-2" for="message">Pesan</label>
+                            <textarea class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="message" rows="4" placeholder="Tulis pesan Anda"></textarea>
+                        </div>
+                        
+                        <div class="flex items-center justify-between">
+                            <button class="bg-primary hover:bg-secondary text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="button">
+                                Kirim Pesan
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Newsletter -->
+    <section class="py-12 bg-primary text-white">
+        <div class="container mx-auto px-4 text-center">
+            <h2 class="text-3xl font-bold mb-4">Berlangganan Newsletter</h2>
+            <p class="text-xl mb-8 max-w-2xl mx-auto">Dapatkan informasi promo dan produk terbaru langsung ke email Anda</p>
+            
+            <form class="max-w-md mx-auto flex">
+                <input type="email" placeholder="Email Anda" class="flex-grow px-4 py-3 rounded-l-md focus:outline-none text-gray-700">
+                <button type="submit" class="bg-accent hover:bg-yellow-600 text-white font-semibold px-6 py-3 rounded-r-md transition">
+                    Daftar
+                </button>
+            </form>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container mx-auto px-4 py-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+                <div>
+                    <h3 class="text-xl font-bold mb-4">KINGME</h3>
+                    <p class="text-gray-300">Toko online terpercaya dengan produk berkualitas dan pelayanan terbaik.</p>
+                    <div class="flex space-x-4 mt-4">
+                        <a href="#" class="text-gray-300 hover:text-white">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                        <a href="#" class="text-gray-300 hover:text-white">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                        <a href="#" class="text-gray-300 hover:text-white">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                        <a href="#" class="text-gray-300 hover:text-white">
+                            <i class="fab fa-tiktok"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <div>
+                    <h4 class="font-semibold text-lg mb-4">Tautan Cepat</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-300 hover:text-white">Beranda</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-white">Produk</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-white">Promo</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-white">Tentang Kami</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-white">Kontak</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="font-semibold text-lg mb-4">Kategori</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-300 hover:text-white">Elektronik</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-white">Fashion Pria</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-white">Fashion Wanita</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-white">Rumah Tangga</a></li>
+
+                        <li><a href="#" class="text-gray
